@@ -1,7 +1,6 @@
 local utf8 = require('utf8')
 local utf8_next = utf8.next
 local string_sub = string.sub
-local utf8_isdigit = utf8.isdigit
 local utf8_isalpha = utf8.isalpha
 
 local JSON_TOKEN_TYPE = {
@@ -13,6 +12,7 @@ local JSON_TOKEN_TYPE = {
 }
 
 local ZERO_BYTE = string.byte('0')
+local NINE_BYTE = string.byte('9')
 local UNDERSCORE_BYTE = string.byte('_')
 local OPEN_BRACKET_BYTE = string.byte('[')
 local CLOSE_BRACKET_BYTE = string.byte(']')
@@ -20,6 +20,10 @@ local SINGLE_QUOTE_BYTE = string.byte('\'')
 local DOUBLE_QUOTE_BYTE = string.byte('"')
 local STAR_BYTE = string.byte('*')
 local DOT_BYTE = string.byte('.')
+
+local function isdigit(codepoint)
+    return ZERO_BYTE <= codepoint and codepoint <= NINE_BYTE
+end
 
 local function json_lexer_new(src, base)
     return {
@@ -94,7 +98,7 @@ end
 local function json_parse_integer(lexer)
     local offset, codepoint = utf8_next(lexer.src, lexer.offset)
 
-    if not utf8_isdigit(codepoint) then
+    if not isdigit(codepoint) then
         return nil, lexer.symbol_count + 1
     end
 
@@ -105,7 +109,7 @@ local function json_parse_integer(lexer)
         len = len + 1
 
         offset, codepoint = utf8.next(lexer.src, offset)
-    until not (offset ~= nil and offset < lexer.src_len + 1 and utf8_isdigit(codepoint))
+    until not (offset ~= nil and offset < lexer.src_len + 1 and isdigit(codepoint))
 
     if value < lexer.index_base then
         return nil, lexer.symbol_count + 1
@@ -127,7 +131,7 @@ local function json_revert_symbol(lexer, offset)
 end
 
 local function json_is_valid_identifier_symbol(char)
-    return utf8_isalpha(char) or char == UNDERSCORE_BYTE or utf8_isdigit(char)
+    return utf8_isalpha(char) or char == UNDERSCORE_BYTE or isdigit(char)
 end
 
 local function json_parse_identifier(lexer)
