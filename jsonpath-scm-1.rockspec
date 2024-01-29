@@ -2,7 +2,7 @@ package = "jsonpath"
 version = "scm-1"
 
 source = {
-    url = "git://github.com/olegrok/tarantool-jsonpath.git",
+    url = "git+https://github.com/olegrok/tarantool-jsonpath.git",
     branch = 'master',
 }
 
